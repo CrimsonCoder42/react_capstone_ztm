@@ -1,5 +1,10 @@
 // Import necessary modules from React
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
+
+import {
+  onAuthStateChangedListener,
+  createUserDocumentFromAuth,
+} from '../utils/firebase/firebase.utils';
 
 // Create a new context called UserContext
 export const UserContext = createContext({
@@ -14,6 +19,19 @@ export const UserProvider = ({ children }) => {
   
   // Create an object value to hold currentUser and setCurrentUser
   const value = { currentUser, setCurrentUser };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChangedListener((user) => {
+      if (user) {
+        createUserDocumentFromAuth(user);
+      }
+      setCurrentUser(user);
+    });
+
+    return unsubscribe;
+
+  }, [currentUser]);
+
 
   // Render the UserContext.Provider component and pass the value prop with the value object
   return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
